@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ExplainIt - Smart YouTube Transcriber</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
+
+      @keyframes gradient-animation {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
+      body {
+        background: linear-gradient(-45deg, #0f172a, #1e293b, #020617, #334155);
+        background-size: 400% 400%;
+        animation: gradient-animation 15s ease infinite;
+        color: #e2e8f0; /* Default text color slate-200 */
+      }
+
+      @keyframes neon-glow {
+        from {
+          box-shadow: 0 0 5px rgba(0, 191, 255, 0.2), 0 0 10px rgba(0, 191, 255, 0.2), 0 0 15px rgba(255, 0, 255, 0.2);
+        }
+        to {
+          box-shadow: 0 0 10px rgba(0, 191, 255, 0.3), 0 0 20px rgba(0, 191, 255, 0.3), 0 0 25px rgba(255, 0, 255, 0.3);
+        }
+      }
+
+      .card-glow {
+          border: 1px solid rgba(0, 191, 255, 0.2);
+          animation: neon-glow 2.5s ease-in-out infinite alternate;
+      }
+      
+      .markdown-summary ul {
+        list-style: disc;
+        padding-left: 20px;
+        margin-top: 8px;
+        margin-bottom: 8px;
+      }
+      .markdown-summary li {
+          margin-bottom: 4px;
+      }
+      .markdown-summary p {
+          margin-bottom: 12px;
+      }
+      .markdown-summary p:last-child {
+          margin-bottom: 0;
+      }
+
+      /* Loader styles */
+      .progress-bar {
+        background-color: rgba(0, 191, 255, 0.1);
+        border: 1px solid rgba(0, 191, 255, 0.2);
+        border-radius: 9999px;
+        overflow: hidden;
+      }
+      .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #00BFFF, #FF00FF);
+        border-radius: 9999px;
+        transition: width 0.5s ease-out;
+      }
+      @keyframes checkmark {
+        0% { stroke-dashoffset: 24; }
+        100% { stroke-dashoffset: 0; }
+      }
+      .checkmark-path {
+        stroke-dasharray: 24;
+        stroke-dashoffset: 24;
+        animation: checkmark 0.3s ease-in-out forwards;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

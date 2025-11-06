@@ -1,0 +1,5 @@
+{
+  "name": "ExplainIt - Smart YouTube Transcriber",
+  "description": "A clean, modern web application to transcribe YouTube videos. Simply paste a YouTube URL to get a downloadable text transcript.",
+  "requestFramePermissions": []
+}
