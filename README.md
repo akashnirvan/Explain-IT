@@ -1,6 +1,7 @@
 # ExplainIt AI - Intelligent Video Learning Companion
 
-![ExplainIt AI Logo](https://via.placeholder.com/800x200/3B82F6/FFFFFF?text=ExplainIt+AI)
+![ExplainIt AI Logo](https://github.com/akashnirvan/Explain-IT/blob/main/Images/logo.png)
+
 *Transforming Passive Video Watching into Active Learning*
 
 ## 🚀 Overview
@@ -18,9 +19,6 @@
 
 ### Prerequisites
 - Node.js 16+ installed
-- npm or yarn package manager
-- OpenAI API key
-- ElevenLabs API key (for audio features)
 
 ### Step 1: Clone the Repository
 ```bash
@@ -38,8 +36,6 @@ yarn install
 ### Step 3: Environment Configuration
 Create a `.env.local` file in the root directory:
 ```env
-OPENAI_API_KEY=your_openai_api_key_here
-ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
@@ -56,37 +52,36 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 🎨 How to Use ExplainIt AI
 
 ### 1. **Getting Started**
-![Homepage](https://via.placeholder.com/600x400/3B82F6/FFFFFF?text=Homepage+Screenshot)
+![Homepage](https://github.com/akashnirvan/Explain-IT/blob/main/Images/homepage.png)
 
 - Visit the ExplainIt AI homepage
 - Paste any YouTube tutorial URL in the input field
 - Click **"Transcribe & Explain"** to begin processing
 
 ### 2. **Processing Phase**
-![Loading Screen](https://via.placeholder.com/600x400/8B5CF6/FFFFFF?text=Loading+Screen)
 
 The AI will automatically:
-- Download and extract audio from the YouTube video
-- Transcribe content using Whisper API
-- Analyze and classify content type
+
+- Analyze by backend and classify content type
 - Generate smart summary and step breakdown
 - **Processing time:** Typically 15-30 seconds
 
 ### 3. **Understanding the Results Dashboard**
-
+![Summary Section](https://github.com/akashnirvan/Explain-IT/blob/main/Images/summary.png)
 #### 📊 **Video Information Section**
-- Displays original video thumbnail and title
+![Summary Section](https://github.com/akashnirvan/Explain-IT/blob/main/Images/title.png)
+- Displays original video and title
 - Shows content type classification (e.g., "Step-by-Step Tutorial")
-- Basic video metadata (duration, channel name)
+
 
 #### 🧠 **AI Summary Section**
-![Summary Section](https://via.placeholder.com/600x300/10B981/FFFFFF?text=AI+Summary+Section)
-- **Smart Summary:** 3-4 paragraph concise overview
+![Summary Section](https://github.com/akashnirvan/Explain-IT/blob/main/Images/summary.png)
+- **Smart Summary:** 3-4 paragraph detailed overview
 - **Key Takeaways:** Bullet points of main concepts
-- **Copy Functionality:** One-click copy to clipboard
+
 
 #### 🛠️ **Step-by-Step Guide Section**
-![Steps Section](https://via.placeholder.com/600x400/F59E0B/FFFFFF?text=Step+by+Step+Guide)
+![Steps Section](https://github.com/akashnirvan/Explain-IT/blob/main/Images/full-ai.png)
 
 **Each Step Card Includes:**
 - **Step Number & Title** (e.g., "Step 1: Environment Setup")
@@ -97,7 +92,7 @@ The AI will automatically:
 #### 💬 **Interactive Features**
 
 ##### **Explain in Detail**
-![Explain Modal](https://via.placeholder.com/500x400/EC4899/FFFFFF?text=Explain+in+Detail)
+
 When you click "Explain in Detail" on any step:
 - Opens a modal with comprehensive explanation
 - Includes:
@@ -107,7 +102,7 @@ When you click "Explain in Detail" on any step:
   - **Related Concepts** - Connected ideas
 
 ##### **Follow-up Q&A**
-![Q&A Interface](https://via.placeholder.com/500x400/06B6D4/FFFFFF?text=Q%26A+Interface)
+![Q&A Interface](https://github.com/akashnirvan/Explain-IT/blob/main/Images/follow-up.png)
 - **Chat-like interface** for asking questions
 - **Context-aware** - AI remembers which step you're asking about
 - **Example questions provided** for guidance
@@ -118,33 +113,13 @@ When you click "Explain in Detail" on any step:
 #### 📥 **Export Options Bar**
 ![Export Section](https://via.placeholder.com/600x200/8B5CF6/FFFFFF?text=Export+Options)
 
-Available formats:
-- **📋 Bullet Points** - Clean, scannable list
-- **🗂️ Table Format** - Structured data presentation
-- **🗺️ Mind Map** - Visual connections (Mermaid.js)
-- **🔊 Audio Summary** - Generated voice overview
-- **📄 Raw Transcript** - Original transcribed text
 
 #### **How to Export:**
 1. Click on your desired format button
 2. Preview the generated content
-3. Click **"Download"** or **"Copy to Clipboard"**
-4. For audio: Click **"Play"** to listen or **"Download MP3"**
+3. Click **"Download"**
 
-## 🔧 Technical Features
 
-### AI-Powered Processing Pipeline
-1. **YouTube Audio Extraction** - High-quality audio capture
-2. **Whisper Transcription** - Accurate speech-to-text conversion
-3. **GPT-4 Content Analysis** - Intelligent structure detection
-4. **Step Classification** - Automatic step identification and organization
-5. **Context Embedding** - Q&A context preparation
-
-### Responsive Design
-- **Mobile-first** approach
-- **Tablet and desktop** optimized
-- **Fast loading** with optimized assets
-- **Accessible** design standards
 
 ## 🎯 Use Cases
 
@@ -175,10 +150,6 @@ Available formats:
 - Check your internet connection
 - Refresh and try again
 
-**❌ "Audio Summary Not Generating"**
-- Verify ElevenLabs API key is correctly set
-- Check API quota limits
-- Ensure audio length is under 10 minutes for summaries
 
 **❌ "Steps Not Properly Detected"**
 - Video content might not be structured
