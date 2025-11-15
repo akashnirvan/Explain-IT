@@ -1,0 +1,42 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://us-central1-aiplatform.googleapis.com/v1/projects/youtube-summariser-476623/locations/us-central1/publishers/google/models/gemini-2.5-flash",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"fileData\": {\n            \"fileUri\": \"https://www.youtube.com/watch?v=bNzkWBOE37Y\",\n            \"mimeType\": \"video/*\"\n          }\n        },\n        {\n          \"text\": \"Provide a summary of the video.\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 1,\n    \"topP\": 0.95,\n    \"maxOutputTokens\": 8192,\n    \"responseModalities\": [\"TEXT\"]\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "12de59bf-11ea-4df3-b19f-0a7fb0fdd1f1",
+      "name": "HTTP Request",
+      "credentials": {
+        "googleApi": {
+          "id": "FMXm2Xu3BLY20bTf",
+          "name": "Google Service Account account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5794d9c3f5ab707e6c104032a3ffe2749b654a5be46ef5755c0c262f0683e87"
+  }
+}
