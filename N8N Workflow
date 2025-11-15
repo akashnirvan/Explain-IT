@@ -1,0 +1,644 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getTranscript",
+        "videoId": "={{ $('Webhook').item.json.body.videoUrl }}",
+        "text": true
+      },
+      "type": "n8n-nodes-supadata.supadata",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -128
+      ],
+      "id": "3e1cf603-c4af-4f9d-874b-5df65a1b8753",
+      "name": "Get video transcript",
+      "credentials": {
+        "supadataApi": {
+          "id": "3t8eYrllpt43Y6cb",
+          "name": "Supadata account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "explainit",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -128
+      ],
+      "id": "28078ca2-88a9-41e8-ade8-193aaece88e9",
+      "name": "Webhook",
+      "webhookId": "a746aa91-3f2b-44f2-9288-5dbc3815554e"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2464,
+        -128
+      ],
+      "id": "34c18ea7-8858-43dc-bb2a-2cc492d5eb15",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.content }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "\nYou are smart content understander and expaner in steps . YOUR TASK IS TO TRANSFORM A YOUTUBE TRANSCRIPT (PROVIDED BY THE USER AS INPUT) INTO A JSON ARRAY OF STEP OBJECTS EXACTLY IN THE SPECIFIED FORMAT. PRODUCE ONLY VALID JSON (no prose, no commentary, no extra fields). If the transcript contains timecodes, preserve them in the detailedExplanation when helpful.\n\nOUTPUT FORMAT (must match this schema exactly):\nsteps: [\n  {\n    stepNumber: <integer starting at 1>,\n    summary: \"<short one-line summary of the step>\",\n    detailedExplanation: \"<multi-sentence explanation, including important details, tips, and any timecodes if present>\"\n  },\n  ...\n]\n\nRULES (follow these strictly):\n1. PARSE the transcript and BREAK it into atomic, user-actionable steps. Each step must be a single object in the array with fields: stepNumber, summary, detailedExplanation.\n2. STEP NUMBERING: Start at 1 and increment by 1 for each step. Do not skip or repeat numbers.\n3. SUMMARY: Keep it short (6–12 words preferred). Use present-tense imperative or neutral descriptive phrasing (e.g., \"Preheat the oven to 350°F\" or \"Attach the filter to the housing\").\n4. DETAILED EXPLANATION: Provide clear, precise instructions and helpful context. Include quantities, durations, temperatures, tool names, or safety notes when they appear in the transcript. If the transcript includes timestamps (e.g., \"2:15\"), include them in parentheses inside detailedExplanation.\n5. PRESERVE ORDER: Maintain the chronological order from the transcript; steps must reflect the sequence shown in the video.\n6. CONSOLIDATION: If consecutive transcript lines describe the same action, MERGE them into a single step. If a single transcript block contains multiple independent actions, SPLIT into multiple steps.\n7. GRANULARITY: Aim for actionable steps — neither too coarse (one step for an entire recipe) nor too granular (separate step for \"grab spoon\" unless the video emphasizes it). Use your judgment to match the video's apparent emphasis and pacing.\n8. MANDATORY JSON-ONLY OUTPUT: The assistant must output exactly valid JSON beginning with `steps: [ ... ]` and nothing else. Do NOT include explanatory text, internal reasoning, or logs.\n9. SANITIZE STRINGS: Escape quotes and special JSON characters inside strings so the output remains valid JSON. Use plain ASCII for keys (exactly `stepNumber`, `summary`, `detailedExplanation`).\n10. HANDLE EDGE CASES:\n   • If transcript is extremely short or only an intro, create at least one step summarizing the main action.\n   • If the transcript contains ambiguous language, choose the most plausible actionable interpretation and reflect uncertainty in the detailedExplanation briefly (e.g., \"appears to mean...\").\n   • Remove filler words and speaker tags unless they are meaningful to the action (e.g., \"Host:\").\n11. LENGTH: There is no hard limit on the number of steps — create as many steps as the video pace and content justify.\n12. TEMPLATING: Do NOT add commas or trailing commas that break JSON. Ensure the output is parseable by standard JSON parsers. Wrap the entire array exactly as `steps: [ ... ]` (i.e., top-level literal `steps:` followed by an array).\n13. DO NOT REVEAL INTERNAL REASONING, CHAIN-OF-THOUGHT, OR DEBUG INFORMATION.\n\nEXAMPLE\n(When given a short transcript like: \"0:00 - Today we'll make baked apples. 0:05 - Preheat oven to 375°F. 0:10 - Core apples and fill with cinnamon sugar. 0:30 - Bake for 25 minutes.\")\nYour JSON output must look like:\n\nsteps: [\n  {\n    stepNumber: 1,\n    summary: \"Preheat oven to 375°F\",\n    detailedExplanation: \"0:05 — Preheat your oven to 375°F (190°C). Ensure the rack is in the center position for even baking.\"\n  },\n  {\n    stepNumber: 2,\n    summary: \"Core apples and fill with cinnamon sugar\",\n    detailedExplanation: \"0:10 — Core each apple using an apple corer or small knife. Mix cinnamon and sugar, then spoon into the cavity of each apple until lightly packed.\"\n  },\n  {\n    stepNumber: 3,\n    summary: \"Bake apples for 25 minutes\",\n    detailedExplanation: \"0:30 — Place apples in a baking dish, add a little water to the bottom, and bake for ~25 minutes or until tender when pierced with a fork.\"\n  }\n]\n\nUSER INPUT FORMAT:\nThe user will provide a raw YouTube transcript (plain text). Expect speaker labels, timecodes, and filler words. Use them when helpful.\n\nFINAL REMARKS:\n- ALWAYS RETURN ONLY THE JSON ARRAY IN THE EXACT `steps: [ ... ]` FORM. NOTHING ELSE.\n- IF YOU CANNOT EXTRACT ANY ACTIONABLE STEPS, RETURN a single-step array where the `summary` briefly states the lack of actionable content and `detailedExplanation` explains why (e.g., \"transcript contains only promotional content\").\n",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        672,
+        -128
+      ],
+      "id": "3f57fd57-2160-4e36-a0fa-1f91ca4a340a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"title\": \"StepByStepSummary\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"steps\": {\n      \"type\": \"array\",\n      \"description\": \"An ordered list of step-by-step actions derived from the transcript.\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"stepNumber\": {\n            \"type\": \"integer\",\n            \"description\": \"Sequential number of the step starting from 1.\"\n          },\n          \"summary\": {\n            \"type\": \"string\",\n            \"description\": \"A concise one-line summary describing the main action of this step.\"\n          },\n          \"detailedExplanation\": {\n            \"type\": \"string\",\n            \"description\": \"A detailed explanation of the step, including reasoning, context, or timecodes if applicable.\"\n          }\n        },\n        \"required\": [\"stepNumber\", \"summary\", \"detailedExplanation\"],\n        \"additionalProperties\": false\n      },\n      \"minItems\": 1\n    }\n  },\n  \"required\": [\"steps\"],\n  \"additionalProperties\": false\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        816,
+        96
+      ],
+      "id": "6a9406e1-69c8-4d82-9353-2acbcb2f81f6",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3b5ff86f-2e2f-4e85-bfe1-fa2a780744f6",
+              "leftValue": "={{ $json.content }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        -128
+      ],
+      "id": "4daddff6-9426-44c4-a0e7-bddff1385801",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "get",
+        "videoId": "={{ $json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        -128
+      ],
+      "id": "75536894-89b7-418a-92c7-ca21965a491f",
+      "name": "Get a video",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "vR6hpPP67SI4mJak",
+          "name": "YouTube account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "717c53b6-83f4-4f1c-a526-e3f4db8bbff4",
+              "name": "title",
+              "value": "={{ $('Get a video').item.json.snippet.title }}",
+              "type": "string"
+            },
+            {
+              "id": "2a1f5a9c-7541-4cf8-8584-d3043920413b",
+              "name": "steps",
+              "value": "={{ $('AI Agent').item.json.output.steps }}",
+              "type": "array"
+            },
+            {
+              "id": "99ad86af-a46f-4efa-a5f4-5a167d6336c1",
+              "name": "summary",
+              "value": "={{ $json.content.parts[1].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1920,
+        -112
+      ],
+      "id": "200801d4-291a-492e-89d6-ddada85fff02",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const link = $('Webhook').first().json.body.videoUrl;\n\nlet id = \"\";\nif (link.includes(\"youtu.be\")) {\n  id = link.split(\"youtu.be/\")[1].split(\"?\")[0];\n} else if (link.includes(\"youtube.com\")) {\n  id = link.split(\"v=\")[1].split(\"&\")[0];\n}\n\nreturn { id };\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -128
+      ],
+      "id": "aa0f8eb0-3a8d-467b-acf4-b9d1c5e189b4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $('Get video transcript').item.json.content }}"
+            },
+            {
+              "content": "You are an expert content analyst specializing in YouTube video summarization. Your role is to transform video transcripts into clear, actionable, and comprehensive summaries that capture the essence of the content while maintaining accuracy and readability.\n\n### Core Responsibilities:\n1. Analyze the provided video transcript and identify the content type (tutorial, podcast, lecture, explainer, review, etc.)\n2. Extract key information, main ideas, and essential takeaways\n3. Create structured summaries tailored to the content format\n4. Maintain strict adherence to the source material without adding external information\n\n### Summarization Guidelines:\n\n**For All Content Types:**\n- Begin with a compelling title that reflects the video's main topic\n- Write a 2-3 sentence introduction explaining what the video covers and its purpose\n- Use clear section headings to organize different topics or themes\n- Include specific examples, statistics, or quotes when they add value\n- End with a brief conclusion highlighting the main takeaway or action items\n\n**Content-Specific Formatting:**\n\nFor Step-by-Step Tutorials:\n- Number each step sequentially\n- Include any prerequisites or required materials mentioned\n- Note important warnings or tips provided\n- Highlight expected outcomes or results\n\nFor Podcast/Interview Content:\n- Identify and label different speakers\n- Organize by discussion topics or themes\n- Extract key insights from each speaker\n- Include memorable quotes or statements\n\nFor Educational/Lecture Videos:\n- Structure by main concepts and subtopics\n- Explain complex ideas in simplified language\n- Preserve important definitions and terminology\n- Include examples that illustrate concepts\n\nFor Product Reviews:\n- List key features discussed\n- Summarize pros and cons mentioned\n- Include pricing or availability information if stated\n- Note the reviewer's final recommendation\n\nFor Explainer Videos:\n- Focus on the \"what\" and \"why\" of the topic\n- Break down complex processes into digestible parts\n- Preserve analogies or metaphors used for clarity\n- Highlight practical applications\n\n**Formatting Requirements:**\n- Use bullet points for lists of features, benefits, or key points\n- Apply bold text sparingly for critical terms or concepts (maximum 3 consecutive words)\n- Include timestamps in format [MM:SS] for major section transitions\n- Use emojis strategically to improve scannability (optional)\n- Keep paragraphs concise (2-4 sentences maximum)\n\n**Quality Standards:**\n- Summary length: Aim for 15-25% of original transcript length\n- Accuracy: Never invent or assume information not present in the transcript\n- Clarity: Write at an 8th-grade reading level unless technical terminology is necessary\n- Completeness: Ensure all major points from the video are represented\n- Objectivity: Maintain the original tone without adding personal opinions\n\n**Avoid:**\n- Filler words or unnecessary repetition\n- Overly technical jargon without explanation\n- Vague statements like \"the speaker discusses various topics\"\n- Promotional language unless it's part of the original content\n- Mixing information from different video sections without clear organization\n\n### Output Structure Template:\n\n**Title:** [Descriptive, engaging title]\n\n**Overview:** [2-3 sentence introduction]\n\n**Main Content:**\n[Organized sections with headings]\n- Key Point 1 [timestamp]\n- Key Point 2 [timestamp]\n- Key Point 3 [timestamp]\n\n**Key Takeaways:**\n- [Bullet point summary of main insights]\n- [Actionable items or recommendations]\n\n**Conclusion:** [1-2 sentence wrap-up]\n\n### Special Instructions:\n- If the transcript contains multiple languages, note this and summarize in English\n- If video quality affects transcript accuracy, indicate uncertainties with [unclear]\n- For videos longer than 30 minutes, consider creating a detailed summary with subsections\n- Adapt summary depth based on content complexity and density\n",
+              "role": "model"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1472,
+        -128
+      ],
+      "id": "2ea4c205-d1c6-4fff-b4bd-bbcc1ba36071",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "EOQFxE1RqfK48mzb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        80
+      ],
+      "id": "1cd37b15-7978-4335-8477-ff71ab857b41",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "etXvGgcPaN4bWERZ",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Get video transcript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get video transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a video": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Get a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Get video transcript": [
+      {
+        "lang": "hi",
+        "availableLangs": [
+          "hi"
+        ],
+        "content": "[संगीत] ब्रो देखियो आज का बंक ना फेल नहीं होगा क्योंकि मैंने शेरलॉक होम्स वाला दिमाग लगाया अ पहले दो बारही भी तू यही बोल चुका है हां तो अबे पहले फेल हुआ वो मैटर नहीं करता अभी सक्सेसफुल हो रहा है ना वो मैटर करता है और हां तूने मैंने कसम खाई है कि हम कभी ब्रोकोड नहीं तोड़ेंगे भाई क्यों हां हां क्या होता है हां बोल ना कॉन्फिडेंस ला हां में हां चले आज 70 में मूवी देखेंगे मॉल में नहीं [संगीत] यार ओए स्कूल बस में क्यों नहीं गई आज स्कूल बस में यार वो अबे जल्दी बोल कल की बस भी छूट जाएगी ऐसे ही नहीं तुम लोग जाओ ऐसे ही नहीं गई तो चल ऐसे ही हमारे साथ बंक प बंक पे हा बंक प नहीं जाना मुझे मुझे जाना है स्कूल अबे तेरे को स्कूल भी जाना है तूने बस भी मिस कर दी छाती क्या है भाई तुम ना जदा टाइम पास मत करो य प मुझे स्कूल जाने बाय अबे इस कंफ्यूज आदमा को छोड़ अपन चलते हैं तू जा तू जाना इसके चक्कर में आज भी स्कूल जाना पड़ेगा मुझे क्या यार तुम्हारा हमेशा का है चलना चलना शाम को मिलता हूं ठीक है ब्रो सी यू क्या अकेला थोड़ी ना जाने दूंगा तुझे हमेशा साथ जाते हैं ना च कैसे जाएंगे ऑटो रिक्शा चल यह ऑटो रिक्शा भी नहीं मिल रहा ऑलरेडी बहुत लेट हो चुके हैं हम स्कूल के लिए अरे शोभ कहां जा रहा है अरे भैया वो स्कूल बंद सॉरी स्कूल बस मिस हो गई हमारी और स्कूल तक जाना था अरे तो मैं ड्रॉप कर दूंगा ना बैठो पक्का हां हां बैठो बैठो बैठो रिया आ हा आजा बैठ गए भैया इह स्कूल ड्रॉप करके फिर डेस्टिनेशन लोकेशन पर चल सकते क्या जो भी पेमेंट एक्स्ट्रा होगी वो मैं आपको दे ही दूंगा कोई प्रॉब्लम तो नहीं नहीं नहीं कोई दिक्कत नहीं है ठीक ठीक है चलते हैं काफी सही है यार लाइक जनरली कैब ड्राइवर्स और कैब सर्विसेस पीपल सेंट्रिक और इतने अंडरस्टैंडिंग नहीं होते बट यह काफी सही है यार जब से मुझे इड्राइव प के बारे में पता चला है ना मैंने और कैप सर्विसेस को यूज ही करना बंद कर दिया इट्स अ पीपल ड्रिवन प और इसमें तुम अपना फेयर और ड्राइवर दोनों चूज कर सकते हो इनफैक्ट तुम अपना फेयर ड्राइवर के साथ नेगोशिएट तक कर सकते हो और इनकी तरफ से ना भाई फुल सपोर्ट मिलता है है ना बढ़िया नाइस सही है तेरे चक्कर में ना आज भी स्कूल जाना पड़ रहा है मुझे मेरे ना लगने वाली है आज स्कूल में बहुत डांट पड़ेगी यार इसीलिए कह रहा था बं तो चल लेते हैं यार डांट पड़ेगी तो उसमें कौन सी नई बात है तुझे तो डांट वैसे भी पड़ती है और मुझे ब्लेम मत कर मैंने बोला था तुझे आने के लिए बड़ा आया बंगक करने का तुझे बस बहाना चाहिए हेलो बहाना नहीं है ये मेरे सच में लगने वाले हैं आज और तुझे ना मेरे को थैंक यू बोलना चाहिए उल्टा मुझे डांट रही है इतनी सेल्फिश है यार रिया त हा हूं मैं सेल्फिश मत कर मुझसे बात हा तो मुझे भी ना कोई शौक नहीं चढ़ा तेरे से बात करने का तू और तेज चिल्ला और तेज चिल्ला गला फट जाएगा कम से कम चुप तो होगा तब से बक करे जा रहा है इरिटेट कर दिया एकदम तेरी आवाज सुनने से अच्छा मैं टोनी कक्कड़ के गाने सुन लू ठीक है और सुन आगे ना स्कूल आ रहा है अभी उतर के चली जा सो स्टूडेंट्स आज मैं एग्जाम के रिजल्ट डिक्लेयर करने वाली हूं टॉप किया है रिया ने बट बट बट ऑन द अदर साइड ऑफ स्पेक्ट्रम एस यूल शुब है मेंटेन हि कंसिस्टेंसी इन फेलिंग क्वाट क् फरम शुभ शुभ यस मैम मैं ये न्यूज पर्सनली तुम्हारे पेरेंट्स को देना चाहती हूं कल बुलाओ अपने पेरेंट्स को अरे कान में क्या पहन रखा है लोफर बनना तुमने सॉरी मैम एनीवेज सेकंड पोजीशन प है विनीता कांग्रेचुलेशन विनीता थर्ड पोजीशन प है गौरव कांग्रेचुलेशन गौरव और सभी बच्चों ने बहुत ही अच्छा स्कोर किया क्यों आई है यहां अच्छा तो तू यह बताने आई है कि तूने क्लास में टॉप किया और मैं फेल हो गया पता है मुझे अब तू जा सकती है किसी भी डायरेक्शन में ले जा रहा है त इस बात रिया मैं तो डायरेक्शन लेस हूं मैं तो पैरेलल लाइंस को भी ना इंटरसेक्ट करवा दूं इतना बड़ा गधा हूं मैं यही प्रूफ करना था ना तेरे को यही करना था यही करना था तुझे [संगीत] सो किड व आर स्टार्टिंग न्यू चैप्टर लीर इक्वेशन ओके [संगीत] [संगीत] रिया इट यू शुभ शुभ तू जा घर चला जा यार रि आई नो मैं रीसेस में ज्यादा गुस्सा हो गया था तेरे से बट प्लीज अभी बाहर आा एंड सॉरी ट्स ओके तू जा ना तू जब तक नहीं आएगी मैं नहीं जाऊंगा यहां से यार तू कितनी करता रहता है हमेशा मैं बोल रही हूं ना चला जा मेरी बात क्यों नहीं सुनता कभी रिया तुझे हमारी दोस्ती की कसम है तू अभी बाहर आ और तू नहीं आई ना तो मैं तेरे से जिंदगी में बात नहीं करने वाला एंड आई एम सीरियस तू ठीक तो है ना यार मुझे बता देती मैं हेल्प कर देता क्या बता देती और क्या बोलती मैं कि मुझे पीरियड्स है [संगीत] तेरे पास पैड पैड्स है तेरे पास यार मैं हमेशा रखती हूं अपने बैग में बट इस बार पता नहीं कैसे डेट कितना पहले आ गए और तू तो जानता है मैं ंडरो और तू किसी से मांग भी नहीं पाई फिर तो तेरे पास वो क्या होता है दवाई भी नहीं होगी वो होता है ना क्रैम्स एंड ऑल के लिए तुझे कैसे बताए इतना सब क्रैम्स मेरे घर पे भी ना एक मां है बड़ी बहन है मेल फीमेल बेस्ट फ्रेंड वाली वीडियोस भी तो होती है मैंने बहुत देखी है उसमें भी तो बताते हैं तो तो तो वहां से पढ़ लिया मैंने इसलिए पढ़ लिया ताकि कभी किसी बेस्ट फ्रेंड की हेल्प कर सकूं और कोई भी नहीं ना तो मैं हूं हमेशा तेरे [संगीत] साथ तुझे तो पता है हम कोड में पढ़ते हैं कोई जज कर लेता तो कोई नहीं जज करता और कोई जज करता भी ना तो मैं उसका पर्सपेक्टिव चेंज कर देता अच्छा वो कैसे करता कुछ नहीं सिंपल है यार बस बस बस इतनी सारी मैच्योरिटी ना फछ से एक्सपेक्टेड नहीं है इट्स अबाउट यू ना तो तेरे केस में थोड़ा हो जाता हूं यार मैं मैचर क्या बोलू अब हो जाता हूं और सॉरी वंस अगेन मतलब यार मैं अपनी ही सोच रहा था अब मुझे समझ आया कि तेरे को इतने मूड स्विंग्स क्यों हो रहे थे नाउ आई गेट इट आई एम सॉरी टू और तू है ना मेरे साथ ये मूड स्विंग्स और क्रम सब स लूंगी थोड़ा एक एक एक मिनट गरम पानी आराम मिलेगा और सुन आज के बाद ना कुछ भी हो तू पहले मेरे से शेयर करेगी एनीवेज थैंक यू सो मच फॉर टुडे शो इतनी बार हक किया है पर ऐसा कंफर्ट कभी फील नहीं हुआ स्पेशल क्यों फील हो रहा है हक के चक्कर में नरूटो का एपिसोड ना मिस हो जाए वैसे हक ज्यादा बेटर है छोड़ शुभ बी इन द मोमेंट [संगीत] मेरे पास कुछ है सुबह बंक मारने के लिए मैंने शर्ट रखी थी अब तेरे काम आएगी [संगीत] य जल्दी आइयो [संगीत] हा हा रिस्पांसिबल हो गया यार तुम दोनों इतनी लेट यहां क्या कर रहे हो मैम वो एक्चुअली मैं ना इधर कुछ काम मैम एक्चुअली आई गट माय पीरियड्स टुडे एंड ही वा जस्ट हेल्पिंग मी वाओ वेरी गुड शु थक यम बट इस चक्कर में तो तुम लोगों की स्कूल बस मिस हो गई होगी ना यस मैम डोंट वरी मैं तुम्हारे लिए इन ड्राइव से अभी कैप बुक कर देती हूं थैंक यू मैम मैं तुम्हारे लिए लोएस्ट प्राइस नेगोशिएट कर देती हूं ठीक है जिससे इट वट बी एक्सपेंसिव फॉर यू थैंक यू मैम एंड इसमें लाइव लोकेशन का भी फीचर है तो मैं तुम्हारी मम्मा को अी शेयर कर देती हूं सो रीच होम सेफली यस मैम टेक केयर या बाय टेक केयर [संगीत] मैम जिंदगी इम्तिहान लेने लगी आज फिर रास्ते कोई राह दिखती नहीं आज फिर पर जो तुम हो और मैं हूं तो किस बात की है फिक्र वत ये भी काटेंगे हम लेकर हंसी होठ पर जाना घबराना तू नहीं मैं हूं ना [संगीत] इधर मैं हूं ना इधर [संगीत] थैंक यू बॉस सी यू क्या शुभ पता है अगर आज तू नहीं होता ना तो तेरे हर अशुभ घड़ी में शुभ विल ऑलवेज बी देयर और हां हां मैं यह शपथ लेता हूं कि चाहे टफ टाइम हो या पीएम सिंग टाइम यह शुभ तेरा हमेशा साथ देगा थैंक यू फॉर ऑलवेज बीइंग विद मी क्या शुभ हा आज मैं भी तेरे साथ तेरे घर चलती हूं क्यों भूल गया कल तेरी अशुभ घड़ी है और समाधान सिर्फ मेरे पास चल हेलो टेंडर वाला आई नो इट टाइम ऑफ मंथ तो मेल बेस्ट फ्रेंड वाली य वीडियोस देख के ना मैं बहुत इंस्पायर हो चुका तो मैंने सारे ट्रैक सची या म शेयर नहीं कर रही यार थोड़ा सा तो पीन दे दूर से पहले बोल मैं अच्छी हू डिजर्व नहीं करती अच्छा मतलब तू है त बहुत अच्छी है यार ये मैं अब क्या तारीफ करूं मैं ले स लाइफ के अलग-अलग स्टेजेस की तरह दोस्त भी कई आते जाते रहते हैं लेकिन सिर्फ खुशनसीब लोगों को ऐसे स्पेशल दोस्त मिलते हैं जो लाइफ के हर स्टेज पे उनके साथ होते हैं दम दरारा रे दम दरारे दम दरारे दम दरारा रे दम दरारे दम दरा रे दम दरारा रे मम धरा रे मम धरा रे मम धरारा रे दम धरा रेम धरा रेम रा रा रेरा रे धमरा रे मरा रे मम रारे धमरा रेरा रे धमरा रे दम धरा रे"
+      }
+    ],
+    "Webhook": [
+      {
+        "headers": {
+          "host": "akashkumar1111.app.n8n.cloud",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+          "content-length": "58",
+          "accept": "*/*",
+          "accept-encoding": "gzip, br",
+          "accept-language": "en-US,en;q=0.9,hi;q=0.8",
+          "cdn-loop": "cloudflare; loops=1; subreqs=1",
+          "cf-connecting-ip": "2402:3a80:f37:f4c9:8565:29a3:a699:c58f",
+          "cf-ew-via": "15",
+          "cf-ipcountry": "IN",
+          "cf-ray": "996dab4b70dd7feb-MAA",
+          "cf-visitor": "{\"scheme\":\"https\"}",
+          "cf-worker": "n8n.cloud",
+          "content-type": "application/json",
+          "origin": "https://6cikwfc2elzbj103ijkbd3wpk44wemdd1zp173s8m3sjoqlvo9-h825039400.scf.usercontent.goog",
+          "priority": "u=1, i",
+          "sec-ch-ua": "\"Google Chrome\";v=\"141\", \"Not?A_Brand\";v=\"8\", \"Chromium\";v=\"141\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "cross-site",
+          "x-forwarded-for": "2402:3a80:f37:f4c9:8565:29a3:a699:c58f, 172.69.131.215",
+          "x-forwarded-host": "akashkumar1111.app.n8n.cloud",
+          "x-forwarded-port": "443",
+          "x-forwarded-proto": "https",
+          "x-forwarded-server": "traefik-prod-users-gwc-30-6d57d45df-jbv7d",
+          "x-is-trusted": "yes",
+          "x-real-ip": "2402:3a80:f37:f4c9:8565:29a3:a699:c58f"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "videoUrl": "https://youtu.be/rBeyHDKLVqM?si=N1yPYoVmJgOw2g7h"
+        },
+        "webhookUrl": "https://akashkumar1111.app.n8n.cloud/webhook-test/explainit",
+        "executionMode": "test"
+      }
+    ],
+    "AI Agent": [
+      {
+        "output": {
+          "steps": [
+            {
+              "stepNumber": 1,
+              "summary": "Decide to skip school and bunk together",
+              "detailedExplanation": "The friends decide they will not attend school and plan to bunk together, expressing confidence this time won't fail like previous attempts."
+            },
+            {
+              "stepNumber": 2,
+              "summary": "Discuss missing the school bus and urgency",
+              "detailedExplanation": "They realize a school bus has been missed and stress that missing the bus again will have consequences, heightening the urgency to reach school somehow."
+            },
+            {
+              "stepNumber": 3,
+              "summary": "Decide to go by auto rickshaw to school",
+              "detailedExplanation": "Since the bus is missed and it's late, they try finding an auto rickshaw for school transport but initially struggle to find one available."
+            },
+            {
+              "stepNumber": 4,
+              "summary": "Accept ride offer from a helpful driver",
+              "detailedExplanation": "A kind driver offers a school drop and later to another destination, assuring extra payment and showing understanding unlike typical cab drivers."
+            },
+            {
+              "stepNumber": 5,
+              "summary": "Learn about using an app for cab service with driver selection",
+              "detailedExplanation": "They discuss an app called eDrive where users can choose their driver and negotiate fare, receiving full support from the service, improving over normal cab experiences."
+            },
+            {
+              "stepNumber": 6,
+              "summary": "Share worries about upcoming school day and possible scolding",
+              "detailedExplanation": "One friend anticipates being scolded heavily for missing school, while the other advises it is a common outcome and to not blame each other."
+            },
+            {
+              "stepNumber": 7,
+              "summary": "Watch the exam results announcement in class",
+              "detailedExplanation": "During class, the teacher declares exam results—Ria tops while the other friend has failed, highlighting the contrast in their academic standings."
+            },
+            {
+              "stepNumber": 8,
+              "summary": "React humorously to each other's academic performance",
+              "detailedExplanation": "They joke and lament about their results and behavior in class, with one friend making fun of being clueless and the other emphasizing the need to work on consistency."
+            },
+            {
+              "stepNumber": 9,
+              "summary": "Start learning the next chapter: linear equations",
+              "detailedExplanation": "The teacher announces the beginning of a new math chapter on linear equations, signaling moving on from previous topics."
+            },
+            {
+              "stepNumber": 10,
+              "summary": "Resolve friendship issues and reconcile after misunderstandings",
+              "detailedExplanation": "Ria and her friend discuss recent disagreements and mood swings, apologize, and agree to be more open with each other going forward."
+            },
+            {
+              "stepNumber": 11,
+              "summary": "Friend offers comfort and practical help during period cramps",
+              "detailedExplanation": "The friend reveals she has period cramps, and her companion offers support by mentioning carrying pads and understanding the discomfort to provide help."
+            },
+            {
+              "stepNumber": 12,
+              "summary": "Discuss maturity and changing perspectives among friends",
+              "detailedExplanation": "They reflect on emotional maturity, mood swings, and support in their friendship, acknowledging growth and willingness to be supportive."
+            },
+            {
+              "stepNumber": 13,
+              "summary": "Friend books cab via eDrive app after missing bus",
+              "detailedExplanation": "After missing the bus, a friend books a cab through the eDrive app at a negotiated low rate, appreciating the live location sharing feature for safety."
+            },
+            {
+              "stepNumber": 14,
+              "summary": "Express gratitude and affirm friendship support and care",
+              "detailedExplanation": "They thank each other for their support through tough times, promise to always stand by each other, and affirm their special friendship bond."
+            },
+            {
+              "stepNumber": 15,
+              "summary": "Plan to watch a Naruto episode and enjoy the moment",
+              "detailedExplanation": "Friends decide to relax and catch a Naruto episode together, prioritizing enjoyment and bonding over stress about school and exams."
+            },
+            {
+              "stepNumber": 16,
+              "summary": "Recognize the rarity and value of true friendship",
+              "detailedExplanation": "They reflect on how true friends come and go through life stages but only a lucky few have special friends who stand by them always."
+            }
+          ]
+        }
+      }
+    ],
+    "Get a video": [
+      {
+        "kind": "youtube#video",
+        "etag": "W0WJJMmrYr-7uGzlY-Dpw8Vkt60",
+        "id": "Gu-O6Tjdjbs",
+        "snippet": {
+          "publishedAt": "2022-12-24T09:52:25Z",
+          "channelId": "UCgM1AQcoM5TRlzsm1e66vrQ",
+          "title": "When Your Bestfriend Gets Her Period Ft. Purav Jha & Mugdha Agarwal | Webseries | Hasley India",
+          "description": "Maturity does not come with age but it comes with experiences. \nDownload the inDrive app -  https://share.indrive.com/lhG6/sidebyside\n\nWhen two individuals share each and every bit of their lives with each other irrespective of where they belong or what personality they withhold, standing Side by Side in every situation that is maturity.\nKich cheezein hum seekhte hain lekin kich cheezein humein life khud sikhati hai. And when we care about someone no matter if we know about things that go on in their lives, we stand there as a helping hand.\nAisi hi ek cute friendship wali story hai Side by Side ke is naye episode mei! Aur jaanne ke liye episode ko end tak dekhiye !\n\nCAST\nPurav Jha\nMughda Agarwal\n\nCREATED BY\nAnkit Madaan\nAman Madaan\nMayank Mishra\n\nDIRECTED BY\nBhavesh Manglani\n\nDIRECTION TEAM\nSaif Ansari\nSahil Vaid\n\nDIRECTOR OF PHOTOGRAPHY \nNitin Goyal Cam\n\nASSOCIATE DOP\nRaju Cam\n\nPOST PRODUCTION HEAD\nRohit Chadha\n\nSTORY \nSarthak Vatsyayan\n\nWRITTEN BY \nAnkit Srivastava\n\n\nEDITOR & COLORIST\nRohit Chadha\n\n\nEXECUTIVE PRODUCER \nHimanshu Sharma\n\nPRODUCTION MANAGER\nSunny Sharma\n\nLINE PRODUCTION \nTeam Kalakast\nKamal Nindawat\n\nGRAPHICS \nDicey Anubhav\n\nSONG PRODUCER & LYRICIST\nAditya Rikhari\n\nCOSTUME AD\nRudra\n\nHAIR & MAKEUP\nKanika Sharma\n\nPRODUCTION TEAM\nKamal Nindawatia\nGaurav Meena\n\nSocial Media\nNikhil Bhardwaj",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/Gu-O6Tjdjbs/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/Gu-O6Tjdjbs/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/Gu-O6Tjdjbs/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/Gu-O6Tjdjbs/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/Gu-O6Tjdjbs/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "channelTitle": "Hasley India",
+          "tags": [
+            "Webseries",
+            "hasley india",
+            "comedy video",
+            "hasley india new video",
+            "purav jha",
+            "purav jha new video",
+            "harsh Beniwal",
+            "harsh purav",
+            "Mugdha Agarwal",
+            "school video",
+            "school love story",
+            "school romance",
+            "school friendship",
+            "school days",
+            "purav vlog",
+            "funny videos",
+            "trending videos",
+            "side by side",
+            "Abhishek Kapoor",
+            "Anushka Kaushik",
+            "school junior",
+            "school senior",
+            "periods",
+            "girl best friend",
+            "boy best friend",
+            "boy",
+            "fight"
+          ],
+          "categoryId": "23",
+          "liveBroadcastContent": "none",
+          "defaultLanguage": "en",
+          "localized": {
+            "title": "When Your Bestfriend Gets Her Period Ft. Purav Jha & Mugdha Agarwal | Webseries | Hasley India",
+            "description": "Maturity does not come with age but it comes with experiences. \nDownload the inDrive app -  https://share.indrive.com/lhG6/sidebyside\n\nWhen two individuals share each and every bit of their lives with each other irrespective of where they belong or what personality they withhold, standing Side by Side in every situation that is maturity.\nKich cheezein hum seekhte hain lekin kich cheezein humein life khud sikhati hai. And when we care about someone no matter if we know about things that go on in their lives, we stand there as a helping hand.\nAisi hi ek cute friendship wali story hai Side by Side ke is naye episode mei! Aur jaanne ke liye episode ko end tak dekhiye !\n\nCAST\nPurav Jha\nMughda Agarwal\n\nCREATED BY\nAnkit Madaan\nAman Madaan\nMayank Mishra\n\nDIRECTED BY\nBhavesh Manglani\n\nDIRECTION TEAM\nSaif Ansari\nSahil Vaid\n\nDIRECTOR OF PHOTOGRAPHY \nNitin Goyal Cam\n\nASSOCIATE DOP\nRaju Cam\n\nPOST PRODUCTION HEAD\nRohit Chadha\n\nSTORY \nSarthak Vatsyayan\n\nWRITTEN BY \nAnkit Srivastava\n\n\nEDITOR & COLORIST\nRohit Chadha\n\n\nEXECUTIVE PRODUCER \nHimanshu Sharma\n\nPRODUCTION MANAGER\nSunny Sharma\n\nLINE PRODUCTION \nTeam Kalakast\nKamal Nindawat\n\nGRAPHICS \nDicey Anubhav\n\nSONG PRODUCER & LYRICIST\nAditya Rikhari\n\nCOSTUME AD\nRudra\n\nHAIR & MAKEUP\nKanika Sharma\n\nPRODUCTION TEAM\nKamal Nindawatia\nGaurav Meena\n\nSocial Media\nNikhil Bhardwaj"
+          },
+          "defaultAudioLanguage": "en"
+        },
+        "contentDetails": {
+          "duration": "PT15M52S",
+          "dimension": "2d",
+          "definition": "hd",
+          "caption": "false",
+          "licensedContent": true,
+          "contentRating": {},
+          "projection": "rectangular"
+        },
+        "status": {
+          "uploadStatus": "processed",
+          "privacyStatus": "public",
+          "license": "youtube",
+          "embeddable": true,
+          "publicStatsViewable": true,
+          "madeForKids": false
+        },
+        "statistics": {
+          "viewCount": "15457703",
+          "likeCount": "378116",
+          "favoriteCount": "0",
+          "commentCount": "5810"
+        },
+        "player": {
+          "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/Gu-O6Tjdjbs\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>"
+        },
+        "topicDetails": {
+          "topicCategories": [
+            "https://en.wikipedia.org/wiki/Entertainment",
+            "https://en.wikipedia.org/wiki/Film"
+          ]
+        },
+        "recordingDetails": {},
+        "localizations": {
+          "en": {
+            "title": "When Your Bestfriend Gets Her Period Ft. Purav Jha & Mugdha Agarwal | Webseries | Hasley India",
+            "description": "Maturity does not come with age but it comes with experiences. \nDownload the inDrive app -  https://share.indrive.com/lhG6/sidebyside\n\nWhen two individuals share each and every bit of their lives with each other irrespective of where they belong or what personality they withhold, standing Side by Side in every situation that is maturity.\nKich cheezein hum seekhte hain lekin kich cheezein humein life khud sikhati hai. And when we care about someone no matter if we know about things that go on in their lives, we stand there as a helping hand.\nAisi hi ek cute friendship wali story hai Side by Side ke is naye episode mei! Aur jaanne ke liye episode ko end tak dekhiye !\n\nCAST\nPurav Jha\nMughda Agarwal\n\nCREATED BY\nAnkit Madaan\nAman Madaan\nMayank Mishra\n\nDIRECTED BY\nBhavesh Manglani\n\nDIRECTION TEAM\nSaif Ansari\nSahil Vaid\n\nDIRECTOR OF PHOTOGRAPHY \nNitin Goyal Cam\n\nASSOCIATE DOP\nRaju Cam\n\nPOST PRODUCTION HEAD\nRohit Chadha\n\nSTORY \nSarthak Vatsyayan\n\nWRITTEN BY \nAnkit Srivastava\n\n\nEDITOR & COLORIST\nRohit Chadha\n\n\nEXECUTIVE PRODUCER \nHimanshu Sharma\n\nPRODUCTION MANAGER\nSunny Sharma\n\nLINE PRODUCTION \nTeam Kalakast\nKamal Nindawat\n\nGRAPHICS \nDicey Anubhav\n\nSONG PRODUCER & LYRICIST\nAditya Rikhari\n\nCOSTUME AD\nRudra\n\nHAIR & MAKEUP\nKanika Sharma\n\nPRODUCTION TEAM\nKamal Nindawatia\nGaurav Meena\n\nSocial Media\nNikhil Bhardwaj"
+          }
+        }
+      }
+    ],
+    "Message a model": [
+      {
+        "content": {
+          "parts": [
+            {
+              "text": "- Ensure all timestamps are accurately placed next to the relevant summarized content.\n\n---\n"
+            },
+            {
+              "text": "**Title: Best Friends Through Thick and Thin: A Story of Support and Understanding**\n\n**Overview:** This video tells a heartwarming story of two best friends, Shubh and Ria, navigating school challenges, unexpected emergencies, and deepening their bond through mutual support. It highlights the importance of empathy and features a convenient transport solution, showcasing how true friendship and practical help can overcome difficult situations.\n\n**Main Content:**\n\n*   **A Rocky Start to the School Day** [00:00]\n    *   Shubh attempts to convince Ria to bunk school, playfully claiming he's using \"Sherlock Holmes' brain,\" but Ria reminds him of their previous failed attempts.\n    *   Despite Ria's initial reluctance and desire to attend school, they both miss the school bus, leading to an argument.\n    *   An auto-rickshaw driver (Shobh) offers them a ride to school after hearing their predicament.\n    *   He introduces them to the iDrive app, highlighting its user-centric features like choosing your fare and driver, negotiating prices, and receiving full support, making it a reliable alternative to other cab services.\n\n*   **School Results and Growing Tensions** [01:21]\n    *   Upon reaching school, the exam results are announced: Ria tops the class, while Shubh maintains his \"consistency in failing,\" leading to a warning for his parents to visit.\n    *   A heated argument erupts between Shubh and Ria during recess, with Shubh feeling hurt that Ria mentioned his failure, and Ria calling him selfish and irritating.\n\n*   **An Unexpected Crisis & True Friendship** [02:29]\n    *   Shubh persists in talking to an upset Ria, eventually discovering she is experiencing an unexpected early period and is unprepared with pads or medicine.\n    *   Shubh shows surprising maturity and understanding, explaining he learned about such situations from \"male-female best friend videos\" and his family.\n    *   He apologizes for his earlier anger and insensitivity, offering support and promising to always be there for her, advising her to share everything with him.\n    *   He even offers her his shirt (which he had for bunking) to tie around her waist for comfort and discretion, suggesting hot water for cramps.\n\n*   **Teacher's Understanding & Safe Ride Home** [03:25]\n    *   Their teacher spots them and asks why they are still at school. Ria explains her situation, and Shubh confirms he was helping her.\n    *   The teacher praises Shubh for his responsibility and understanding.\n    *   She then uses the iDrive app to book a cab for them, negotiating the lowest price and sharing the live location with Ria's mother to ensure their safe return home.\n\n*   **Deepened Bond and Future Support** [04:09]\n    *   A touching song plays, emphasizing the strength of their friendship through challenges.\n    *   Shubh vows to always support Ria, even in his own \"inauspicious\" times, and Ria expresses gratitude for his presence.\n    *   Their bond strengthens, symbolizing how special friends remain constant through life's different stages.\n\n**Key Takeaways:**\n*   True friendship involves unwavering support, understanding, and empathy, especially during sensitive and challenging moments.\n*   Open communication and vulnerability can strengthen bonds between friends.\n*   The iDrive app is presented as a convenient, user-friendly, and customizable transportation service that prioritizes user needs and safety.\n*   Even in everyday school life, unexpected situations can arise that test and solidify friendships.\n\n**Conclusion:** The video beautifully illustrates the transformative power of genuine friendship and how practical solutions, combined with deep understanding, can turn a difficult day into a memorable moment of connection and support."
+            }
+          ],
+          "role": "model"
+        },
+        "finishReason": "STOP",
+        "index": 0
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5794d9c3f5ab707e6c104032a3ffe2749b654a5be46ef5755c0c262f0683e87"
+  }
+}
